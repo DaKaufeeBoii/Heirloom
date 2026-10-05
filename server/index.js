@@ -201,11 +201,14 @@ app.get('/debug-sentry', function mainHandler(req, res) {
 // Sentry error handler
 Sentry.setupExpressErrorHandler(app);
 
-// Serve frontend in production
+// Serve frontend in production (Express 5 compatible SPA fallback)
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../dist')));
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../dist/index.html'));
+  app.use((req, res, next) => {
+    if (req.method === 'GET' && !req.path.startsWith('/api')) {
+      return res.sendFile(path.join(__dirname, '../dist/index.html'));
+    }
+    next();
   });
 }
 
