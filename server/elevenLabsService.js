@@ -97,12 +97,31 @@ export async function synthesizeGrandpaVoice(text, voiceId = DEFAULT_VOICE_ID) {
       });
 
       if (response.ok) {
+        // Extract ElevenLabs generation metadata as specified in API documentation
+        const charCost = response.headers.get('character-cost');
+        const requestId = response.headers.get('request-id');
+        const traceId = response.headers.get('x-trace-id');
+
         const arrayBuffer = await response.arrayBuffer();
         const base64Audio = Buffer.from(arrayBuffer).toString('base64');
-        span.end({ status: 'success', audioBytes: arrayBuffer.byteLength });
+
+        // Log telemetry to Sentry span
+        span.end({
+          status: 'success',
+          audioBytes: arrayBuffer.byteLength,
+          characterCost: charCost ? parseInt(charCost, 10) : text.length,
+          requestId,
+          traceId,
+        });
+
         return {
           audioDataUrl: `data:audio/mpeg;base64,${base64Audio}`,
           provider: 'elevenlabs_cloud_tts',
+          metadata: {
+            characterCost: charCost,
+            requestId,
+            traceId,
+          },
         };
       }
     }
@@ -117,6 +136,53 @@ export async function synthesizeGrandpaVoice(text, voiceId = DEFAULT_VOICE_ID) {
   } catch (err) {
     span.end({ error: err.message, status: 'error' });
     return { audioDataUrl: null, provider: 'error_fallback', text };
+  }
+}
+
+/**
+ * Stream real-time audio bytes using chunked transfer encoding from ElevenLabs
+ */
+export async function streamGrandpaVoice(text, voiceId = DEFAULT_VOICE_ID) {
+  const span = startAgentSpan('elevenlabs.text_to_speech_stream', 'audio.stream', {
+    textLength: text.length,
+    voiceId,
+  });
+
+  if (!ELEVENLABS_API_KEY) {
+    span.end({ simulated: true });
+    return null;
+  }
+
+  try {
+    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream`, {
+      method: 'POST',
+      headers: {
+        'xi-api-key': ELEVENLABS_API_KEY,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        text,
+        model_id: 'eleven_multilingual_v2',
+        voice_settings: {
+          stability: 0.65,
+          similarity_boost: 0.8,
+        },
+      }),
+    });
+
+    if (response.ok && response.body) {
+      span.end({
+        status: 'streaming_started',
+        requestId: response.headers.get('request-id'),
+        traceId: response.headers.get('x-trace-id'),
+      });
+      return response.body;
+    }
+    span.end({ status: 'failed', httpCode: response.status });
+    return null;
+  } catch (err) {
+    span.end({ error: err.message, status: 'error' });
+    return null;
   }
 }
 

@@ -6,7 +6,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 import { runMastraRecipeWorkflow } from './mastraWorkflow.js';
-import { transcribeAudio, synthesizeGrandpaVoice, getSampleTranscriptForAudio } from './elevenLabsService.js';
+import { transcribeAudio, synthesizeGrandpaVoice, streamGrandpaVoice, getSampleTranscriptForAudio } from './elevenLabsService.js';
 import { getAllRecipes, saveRecipe, searchRecipes } from './memoryStore.js';
 import { getRecentTraces } from './sentryTracing.js';
 
@@ -131,6 +131,37 @@ app.post('/api/narrate', async (req, res) => {
     res.json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+// Stream Grandpa Voice in real time using ElevenLabs chunked transfer encoding
+app.get('/api/narrate/stream', async (req, res) => {
+  try {
+    const { text, voiceId } = req.query;
+    if (!text) return res.status(400).send('Text query param is required');
+
+    const audioStream = await streamGrandpaVoice(text, voiceId);
+    if (!audioStream) {
+      return res.status(503).json({ error: 'Live streaming requires ELEVENLABS_API_KEY in .env' });
+    }
+
+    res.setHeader('Content-Type', 'audio/mpeg');
+    res.setHeader('Transfer-Encoding', 'chunked');
+
+    // Pipe audio stream to response
+    const reader = audioStream.getReader();
+    const pump = async () => {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        res.write(Buffer.from(value));
+      }
+      res.end();
+    };
+    pump();
+  } catch (err) {
+    console.error('Audio stream error:', err);
+    res.status(500).end();
   }
 });
 
