@@ -8,7 +8,7 @@ import { fileURLToPath } from 'url';
 
 import { runMastraRecipeWorkflow } from './mastraWorkflow.js';
 import { transcribeAudio, synthesizeGrandpaVoice, streamGrandpaVoice, getSampleTranscriptForAudio } from './elevenLabsService.js';
-import { getAllRecipes, saveRecipe, searchRecipes } from './memoryStore.js';
+import { getAllRecipesAsync, saveRecipeAsync, searchRecipesAsync, isAtlasConnected } from './memoryStore.js';
 import { getRecentTraces } from './sentryTracing.js';
 
 dotenv.config();
@@ -46,7 +46,7 @@ app.get('/api/system-status', (req, res) => {
       elevenLabs: { name: 'ElevenLabs', status: process.env.ELEVENLABS_API_KEY ? 'cloud_active' : 'demo_ready', prizeCategory: 'Best Use of ElevenLabs ($100)' },
       mastra: { name: 'Mastra', status: 'active', version: '^1.74.0', prizeCategory: 'Best Use of Mastra ($100)' },
       sentry: { name: 'Sentry Agent Tracing', status: 'active', prizeCategory: 'Best Use of Sentry Agent Tracing ($100)' },
-      mongoAtlas: { name: 'MongoDB Atlas', status: process.env.MONGODB_URI ? 'connected' : 'memory_synced', prizeCategory: 'Best Use of MongoDB Atlas ($100)' },
+      mongoAtlas: { name: 'MongoDB Atlas', status: isAtlasConnected() ? 'atlas_cluster_connected' : (process.env.MONGODB_URI ? 'connecting' : 'memory_synced'), prizeCategory: 'Best Use of MongoDB Atlas ($100)' },
     },
   });
 });
@@ -167,16 +167,21 @@ app.get('/api/narrate/stream', async (req, res) => {
 });
 
 // Get all heirloom recipes
-app.get('/api/recipes', (req, res) => {
-  const { q } = req.query;
-  const recipes = searchRecipes(q || '');
-  res.json(recipes);
+// Get all heirloom recipes (MongoDB Atlas synced)
+app.get('/api/recipes', async (req, res) => {
+  try {
+    const { q } = req.query;
+    const recipes = await searchRecipesAsync(q || '');
+    res.json(recipes);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// Save recipe
-app.post('/api/recipes', (req, res) => {
+// Save recipe (MongoDB Atlas synced)
+app.post('/api/recipes', async (req, res) => {
   try {
-    const saved = saveRecipe(req.body);
+    const saved = await saveRecipeAsync(req.body);
     res.json({ success: true, recipe: saved });
   } catch (err) {
     res.status(500).json({ error: err.message });

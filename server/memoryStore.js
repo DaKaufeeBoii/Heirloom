@@ -1,6 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { MongoClient } from 'mongodb';
+import { startAgentSpan } from './sentryTracing.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -90,14 +92,73 @@ const INITIAL_HEIRLOOM_RECIPES = [
   }
 ];
 
-// Load recipes from file or initialize
+// MongoDB Atlas Client & Connection
+let mongoClient = null;
+let recipesCollection = null;
+let isMongoConnected = false;
+
+const MONGODB_URI = process.env.MONGODB_URI || '';
+
+async function initMongoDB() {
+  if (!MONGODB_URI) {
+    console.log('[MongoDB Atlas] Running in local file store mode (Set MONGODB_URI to connect Atlas cluster).');
+    return;
+  }
+
+  const span = startAgentSpan('mongodb.connect', 'db.connect', {
+    uriPreview: MONGODB_URI.split('@')[1] || 'cluster',
+  });
+
+  try {
+    mongoClient = new MongoClient(MONGODB_URI, {
+      serverSelectionTimeoutMS: 5000,
+    });
+    await mongoClient.connect();
+    const db = mongoClient.db('heirloom');
+    recipesCollection = db.collection('recipes');
+    isMongoConnected = true;
+
+    // Check count and seed if empty
+    const count = await recipesCollection.countDocuments();
+    if (count === 0) {
+      console.log('[MongoDB Atlas] Seeding initial heirloom family recipes into Atlas cluster...');
+      await recipesCollection.insertMany(INITIAL_HEIRLOOM_RECIPES);
+    }
+
+    span.end({ status: 'connected', existingDocuments: count });
+    console.log('[MongoDB Atlas] Successfully connected to Cluster0 (database: heirloom, collection: recipes)!');
+  } catch (err) {
+    span.end({ error: err.message, status: 'error' });
+    console.warn('[MongoDB Atlas] Could not connect to Atlas cluster, using local persistent fallback:', err.message);
+    isMongoConnected = false;
+  }
+}
+
+// Start connection in background
+initMongoDB();
+
+// Load recipes from MongoDB Atlas or local JSON file
+export async function getAllRecipesAsync() {
+  if (isMongoConnected && recipesCollection) {
+    const span = startAgentSpan('mongodb.find_all', 'db.query');
+    try {
+      const docs = await recipesCollection.find({}).toArray();
+      span.end({ count: docs.length });
+      // Map _id out for clean frontend consumption
+      return docs.map(({ _id, ...r }) => r);
+    } catch (e) {
+      span.end({ error: e.message });
+    }
+  }
+  return getAllRecipes();
+}
+
 export function getAllRecipes() {
   try {
     if (fs.existsSync(RECIPES_FILE)) {
       const data = fs.readFileSync(RECIPES_FILE, 'utf-8');
       return JSON.parse(data);
     }
-    // Write seeds
     fs.writeFileSync(RECIPES_FILE, JSON.stringify(INITIAL_HEIRLOOM_RECIPES, null, 2));
     return INITIAL_HEIRLOOM_RECIPES;
   } catch (err) {
@@ -106,9 +167,29 @@ export function getAllRecipes() {
   }
 }
 
+export async function saveRecipeAsync(newRecipe) {
+  // Save to MongoDB Atlas
+  if (isMongoConnected && recipesCollection) {
+    const span = startAgentSpan('mongodb.save_recipe', 'db.write', {
+      recipeId: newRecipe.id,
+      title: newRecipe.title,
+    });
+    try {
+      await recipesCollection.updateOne(
+        { id: newRecipe.id },
+        { $set: newRecipe },
+        { upsert: true }
+      );
+      span.end({ status: 'saved_to_atlas' });
+    } catch (e) {
+      span.end({ error: e.message, status: 'failed_atlas' });
+    }
+  }
+  return saveRecipe(newRecipe);
+}
+
 export function saveRecipe(newRecipe) {
   const current = getAllRecipes();
-  // Check if exists
   const existingIdx = current.findIndex(r => r.id === newRecipe.id);
   if (existingIdx >= 0) {
     current[existingIdx] = newRecipe;
@@ -117,6 +198,29 @@ export function saveRecipe(newRecipe) {
   }
   fs.writeFileSync(RECIPES_FILE, JSON.stringify(current, null, 2));
   return newRecipe;
+}
+
+export async function searchRecipesAsync(query = '') {
+  if (isMongoConnected && recipesCollection && query.trim()) {
+    const span = startAgentSpan('mongodb.search_recipes', 'db.search', { query });
+    try {
+      const regex = new RegExp(query.trim(), 'i');
+      const docs = await recipesCollection.find({
+        $or: [
+          { title: regex },
+          { speakerName: regex },
+          { summary: regex },
+          { 'grandpaLore.story': regex },
+          { 'ingredients.item': regex },
+        ]
+      }).toArray();
+      span.end({ results: docs.length });
+      return docs.map(({ _id, ...r }) => r);
+    } catch (e) {
+      span.end({ error: e.message });
+    }
+  }
+  return searchRecipes(query);
 }
 
 export function searchRecipes(query = '') {
@@ -137,4 +241,8 @@ export function searchRecipes(query = '') {
 
     return terms.every(term => haystack.includes(term));
   });
+}
+
+export function isAtlasConnected() {
+  return isMongoConnected;
 }

@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@mastra/core": "^1.74.0",
-    "@sentry/node": "^11.4.0"
+    "@sentry/node": "^11.4.0",
+    "mongodb": "^7.7.0"
   }
 }

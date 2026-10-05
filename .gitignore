@@ -1,6 +1,8 @@
 node_modules/
 dist/
 .env
+*.env
+atlas-credentials.env
 .DS_Store
 *.log
 npm-debug.log*
