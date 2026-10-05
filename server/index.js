@@ -1,4 +1,5 @@
 import express from 'express';
+import * as Sentry from '@sentry/node';
 import cors from 'cors';
 import multer from 'multer';
 import dotenv from 'dotenv';
@@ -187,6 +188,14 @@ app.get('/api/traces', (req, res) => {
   res.json(getRecentTraces());
 });
 
+// Sentry Verification Route (Intentional test error for Sentry dashboard onboarding)
+app.get('/debug-sentry', function mainHandler(req, res) {
+  throw new Error('Heirloom test error for Sentry Agent Tracing!');
+});
+
+// Sentry error handler
+Sentry.setupExpressErrorHandler(app);
+
 // Serve frontend in production
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../dist')));
@@ -200,5 +209,6 @@ app.listen(PORT, () => {
   console.log(`📖 Heirloom API Server running on http://localhost:${PORT}`);
   console.log(`🌟 Hacktoberfest 2026 — Theme: Build for a Friend`);
   console.log(`🤖 Powered by Gemma 2 Open-Weight AI + Mastra + ElevenLabs + Sentry`);
+  console.log(`🎯 Sentry Agent Tracing active with DSN`);
   console.log(`======================================================\n`);
 });
