@@ -13,6 +13,7 @@ import {
   Flame,
   Heart
 } from 'lucide-react';
+import VintageAudioPlayer from './VintageAudioPlayer';
 
 export default function RecipeCard({
   recipe,
@@ -151,6 +152,15 @@ export default function RecipeCard({
             {recipe.summary}
           </p>
         )}
+      </div>
+
+      {/* Vintage Cassette Tape Player for Grandpa's Recording */}
+      <div style={{ marginBottom: '32px' }}>
+        <VintageAudioPlayer
+          title={recipe.title}
+          speaker={recipe.speakerName}
+          subtitle="Restored Family Voice Recording • Sanyo Tape Deck"
+        />
       </div>
 
       {/* Grandpa's Heritage Lore Box (The emotional core of the project!) */}

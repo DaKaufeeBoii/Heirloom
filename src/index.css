@@ -640,22 +640,481 @@ h1, h2, h3, h4, .font-serif {
   background: var(--secondary-olive-hover);
 }
 
-/* Printable Keepsake (@media print) */
-@media print {
-  body {
-    background: white !important;
-    color: black !important;
-  }
-  .header-banner, .nav-tabs, .sponsors-ribbon, .btn, .no-print {
-    display: none !important;
-  }
-  .app-container {
-    padding: 0 !important;
-    max-width: 100% !important;
-  }
-  .heirloom-card {
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
+/* ========================================================
+   VINTAGE CASSETTE DECK AUDIO SYSTEM
+   Analog Nostalgia: Walnut Wood, Brushed Brass, Spinning Reels, VU Meters
+   ======================================================== */
+
+.vintage-deck-chassis {
+  background: linear-gradient(180deg, #2D2520 0%, #1D1815 100%);
+  border: 4px solid #4A3C34;
+  border-radius: var(--radius-lg);
+  box-shadow: 
+    0 16px 40px rgba(0, 0, 0, 0.45),
+    inset 0 1px 1px rgba(255, 255, 255, 0.15),
+    inset 0 -2px 8px rgba(0, 0, 0, 0.8);
+  padding: 24px;
+  color: #EDE3D8;
+  margin-top: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.deck-header-plate {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #3E322B;
+  padding-bottom: 12px;
+  margin-bottom: 18px;
+}
+
+.deck-brand-badge {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  color: #CBBCAE;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+}
+
+.deck-tape-counter {
+  background: #0D0A08;
+  border: 1px solid #44372F;
+  border-radius: 4px;
+  padding: 3px 8px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
+}
+
+.counter-led-text {
+  font-family: monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: #52B788;
+  letter-spacing: 0.12em;
+  text-shadow: 0 0 6px rgba(82, 183, 136, 0.6);
+}
+
+.deck-bay-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 20px;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .deck-bay-grid {
+    grid-template-columns: 1fr;
   }
 }
+
+/* The Cassette Viewport & Body */
+.cassette-viewport {
+  background: #14100E;
+  border: 3px solid #382C24;
+  border-radius: var(--radius-md);
+  padding: 16px;
+  box-shadow: inset 0 4px 12px rgba(0,0,0,0.9);
+}
+
+.cassette-body {
+  background: #25201C;
+  border: 2px solid #44382F;
+  border-radius: 8px;
+  position: relative;
+  padding: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+
+.cassette-label-stripes {
+  background: #FAF7F0;
+  border-radius: 4px;
+  padding: 8px 12px;
+  border: 1px solid #DDD0C0;
+  position: relative;
+  overflow: hidden;
+}
+
+.stripe-red {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: #C85A32;
+}
+
+.stripe-orange {
+  position: absolute;
+  top: 4px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #E09F3E;
+}
+
+.cassette-label-text {
+  display: flex;
+  flex-direction: column;
+  color: #2B2118;
+  margin-top: 4px;
+}
+
+.label-side {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #8C7355;
+}
+
+.label-handwritten {
+  font-family: var(--font-handwriting);
+  font-size: 19px;
+  line-height: 1.1;
+  color: #1A1410;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.label-speaker {
+  font-size: 11px;
+  font-style: italic;
+  color: #6E5A47;
+}
+
+/* Cassette Center Window & Spools */
+.cassette-window {
+  background: rgba(18, 14, 12, 0.85);
+  border: 2px solid #3A2E25;
+  border-radius: 6px;
+  margin-top: 10px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 16px;
+  position: relative;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.9);
+}
+
+.spool-housing {
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.tape-pack {
+  background: #100C09;
+  border-radius: 50%;
+  position: absolute;
+  border: 1px solid #2B221B;
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+.spool-teeth {
+  width: 26px;
+  height: 26px;
+  background: #EAE3D6;
+  border-radius: 50%;
+  border: 3px solid #8C7C6D;
+  position: relative;
+  box-shadow: 0 0 4px rgba(0,0,0,0.5);
+}
+
+.spool-teeth.spinning {
+  animation: spin-tape 2.2s linear infinite;
+}
+
+.tooth {
+  position: absolute;
+  width: 4px;
+  height: 12px;
+  background: #8C7C6D;
+  left: 8px;
+  top: 4px;
+}
+
+.tooth-1 { transform: rotate(0deg); }
+.tooth-2 { transform: rotate(60deg); }
+.tooth-3 { transform: rotate(120deg); }
+
+@keyframes spin-tape {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.tape-bridge {
+  flex: 1;
+  height: 12px;
+  margin: 0 10px;
+  border-bottom: 2px solid #33261D;
+  position: relative;
+}
+
+.tape-film {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #080605;
+}
+
+/* Dual Glowing Analog VU Meters */
+.vu-meter-rack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #181412;
+  border: 2px solid #3E3229;
+  border-radius: var(--radius-md);
+  padding: 14px;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+}
+
+.vu-meter-box {
+  background: #FFFCE8;
+  border: 2px solid #2F251E;
+  border-radius: 6px;
+  padding: 8px 12px;
+  position: relative;
+  box-shadow: 
+    inset 0 0 16px rgba(224, 159, 62, 0.35),
+    0 1px 3px rgba(0,0,0,0.6);
+}
+
+.vu-scale-label {
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: #7D6B5A;
+  margin-bottom: 2px;
+}
+
+.vu-dial-face {
+  height: 28px;
+  position: relative;
+  overflow: hidden;
+}
+
+.vu-needle {
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  width: 2px;
+  height: 30px;
+  background: #D9381E;
+  transform-origin: bottom center;
+  transition: transform 0.08s ease-out;
+  box-shadow: 0 0 2px rgba(0,0,0,0.5);
+}
+
+.vu-markings {
+  position: absolute;
+  top: 2px;
+  width: 100%;
+  text-align: center;
+  font-size: 8px;
+  font-weight: 700;
+  color: #4A3A2C;
+  letter-spacing: 0.05em;
+}
+
+/* Tape Warmth Indicator */
+.tape-warmth-switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 4px 8px;
+  background: #241D18;
+  border-radius: 4px;
+  border: 1px solid #3E3228;
+  user-select: none;
+  transition: all 0.2s ease;
+}
+
+.tape-warmth-switch:hover {
+  background: #2E251F;
+}
+
+.warmth-led {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #44352B;
+  transition: all 0.2s ease;
+}
+
+.tape-warmth-switch.active .warmth-led {
+  background: #E09F3E;
+  box-shadow: 0 0 8px #E09F3E, 0 0 12px rgba(224, 159, 62, 0.8);
+}
+
+.warmth-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #B5A596;
+}
+
+/* Timeline & Scrub Bar */
+.deck-timeline-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0 14px 0;
+}
+
+.time-display {
+  font-family: monospace;
+  font-size: 12px;
+  color: #D4A373;
+  font-weight: 700;
+  min-width: 44px;
+}
+
+.vintage-slider {
+  flex: 1;
+  -webkit-appearance: none;
+  height: 6px;
+  background: #100C09;
+  border: 1px solid #44372F;
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+}
+
+.vintage-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #E09F3E, #C85A32);
+  border: 2px solid #FFFFFF;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.6);
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.vintage-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+/* Mechanical Deck Buttons */
+.deck-controls-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  border-top: 2px solid #3E322B;
+  padding-top: 16px;
+}
+
+.mechanical-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.retro-mech-btn {
+  background: linear-gradient(180deg, #4A3D34 0%, #2A211B 100%);
+  border: 1px solid #665547;
+  border-bottom: 3px solid #16120F;
+  border-radius: 6px;
+  color: #EDE3D8;
+  padding: 8px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.4);
+  transition: all 0.1s ease;
+  min-width: 58px;
+}
+
+.retro-mech-btn:hover {
+  background: linear-gradient(180deg, #594A3F 0%, #362B24 100%);
+  color: #FFF;
+}
+
+.retro-mech-btn:active {
+  transform: translateY(2px);
+  border-bottom-width: 1px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.4);
+}
+
+.btn-legend {
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #C0B0A0;
+}
+
+.main-play-btn {
+  background: linear-gradient(180deg, #C85A32 0%, #8C3717 100%);
+  border-color: #E27954;
+  border-bottom-color: #551D0B;
+  padding: 10px 20px;
+}
+
+.main-play-btn:hover {
+  background: linear-gradient(180deg, #DB673B 0%, #9E401C 100%);
+}
+
+.main-play-btn.playing {
+  background: linear-gradient(180deg, #E09F3E 0%, #A36B17 100%);
+  border-color: #F8BE6B;
+}
+
+/* Volume Control Pod */
+.volume-control-pod {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #181412;
+  border: 1px solid #3E3228;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+}
+
+.mute-btn {
+  background: none;
+  border: none;
+  color: #CBBCAE;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.volume-slider {
+  -webkit-appearance: none;
+  width: 70px;
+  height: 4px;
+  background: #2D231C;
+  border-radius: 2px;
+  outline: none;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #D4A373;
+  cursor: pointer;
+}
+
+.volume-pct {
+  font-size: 11px;
+  font-family: monospace;
+  color: #B5A596;
+  min-width: 32px;
+}
+

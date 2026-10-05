@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Mic, Square, Upload, Play, Sparkles, ChefHat, CheckCircle2, ArrowRight, Volume2, Info } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import VintageAudioPlayer from './VintageAudioPlayer';
 
 export default function VoiceMemoStudio({ onRecipeExtracted }) {
   const [speakerName, setSpeakerName] = useState('Grandpa Joe (Nonno)');
@@ -216,9 +217,13 @@ export default function VoiceMemoStudio({ onRecipeExtracted }) {
               {isRecording ? 'Speak freely, tell the story of the dish' : 'Or drop a voice memo file (.mp3, .wav, .m4a)'}
             </div>
 
-            {audioUrl && (
+            {(audioUrl || selectedSample) && (
               <div style={{ marginTop: '16px', width: '100%' }}>
-                <audio controls src={audioUrl} style={{ width: '100%', height: '36px' }} />
+                <VintageAudioPlayer
+                  audioSrc={audioUrl}
+                  title={selectedSample ? selectedSample.title : "Live Grandpa Recording"}
+                  speaker={speakerName}
+                />
               </div>
             )}
 
