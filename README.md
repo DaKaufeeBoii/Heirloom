@@ -86,7 +86,7 @@ graph TD
 
 ### 2. Clone & Install
 ```bash
-git clone https://github.com/your-username/hacktoberfest-2026-heirloom.git
+git clone https://github.com/DaKaufeeBoii/Heirloom.git
 cd challenge-1
 npm install
 ```
@@ -120,7 +120,7 @@ I built it for my grandfather (and everyone whose family has legendary, unwritte
 
 ## Demo
 - Live Web App: [Heirloom on Render](https://heirloom-cookbook.onrender.com)
-- Repo: [GitHub Repository](https://github.com/your-username/hacktoberfest-2026-heirloom)
+- Repo: [GitHub Repository](https://github.com/DaKaufeeBoii/Heirloom)
 
 ## How I Built It
 Heirloom is built around open-source AI and sponsor frameworks:
